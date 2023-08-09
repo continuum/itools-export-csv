@@ -7,17 +7,33 @@ function MyBlock() {
     const records = useRecords(table);
 
     const exportToCSV = async () => {
-        const csvData = [
-        'Medusa,Team,Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre', //Add titles row
-        ...records.map(record => {
-            const values = [
-                record.getCellValueAsString('Medusa'), // Replace with your field names
-                record.getCellValueAsString('Team'),
-            ];
+        const months = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
 
-            return values.join(',');
-        })
-    ].join('\n');
+        const csvData = [
+            'Medusa,Rol,' + months.join(','), // Add months row
+            ...records.map(record => {
+                const medusa = record.getCellValueAsString('Medusa'); // Replace with your field names
+                const rol = record.getCellValueAsString('Charge for Pipeline (from People) (from Medusa)')
+                const team = record.getCellValueAsString('Team');
+                const since = record.getCellValue('MonthSince');
+                const until = record.getCellValue('MonthUntil');
+
+                const values = [medusa,rol, team];
+
+                for (let month = 1; month <= 12; month++) {
+                    if (month >= since && month <= until) {
+                        values.push(team); // Put Team name for months in the range
+                    } else {
+                        values.push(''); // Empty for months outside the range
+                    }
+                }
+
+                return values.join(',');
+            })
+        ].join('\n');
 
         const csvBlob = new Blob([csvData], { type: 'text/csv' });
         const csvUrl = URL.createObjectURL(csvBlob);
@@ -39,4 +55,3 @@ function MyBlock() {
 }
 
 initializeBlock(() => <MyBlock />);
-
