@@ -16,14 +16,21 @@ function MyBlock() {
         borderRadius: '4px',
       };
     const base = useBase();
-    const table = base.getTableByName('Team Memberships').getView("CurrentCSV"); // Replace with your table name
+    const table = base.getTableByName('Team Memberships').getView("CurrentCSV");
+    const tableVacations = base.getTableByName('Vacations').getView('CurrentCSV'); 
+    
     const records = useRecords(table);
+    const recordsVacation = useRecords(tableVacations);
 
     const exportToCSV = async () => {
         const months = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            'EneroF1','EneroF2', 'FebreroF1','FebreroF2', 'MarzoF1','MarzoF2', 'AbrilF1','AbrilF2', 'MayoF1','MayoF2', 'JunioF1','JunioF2',
+            'JulioF1','JulioF2', 'AgostoF1','AgostoF2', 'SeptiembreF1','SeptiembreF2', 'OctubreF1','OctubreF2', 'NoviembreF1','NoviembreF2', 'DiciembreF1','DiciembreF2'
         ];
+        let monthsOnly = [
+            'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+        ];
+        
     
         // Agrupar los registros por el valor de "Medusa"
         const groupRecords = {};
@@ -34,33 +41,98 @@ function MyBlock() {
             }
             groupRecords[medusa].push(record);
         });
+   
     
         const csvData = [
-            'Medusa,Rol,' + months.join(','), // Add months row
+            'Medusa,Rol,' + months.join(','), 
             ...Object.entries(groupRecords).map(([medusa, records]) => {
                 const rol = records[0].getCellValueAsString('Charge for Pipeline (from People) (from Medusa)');
-                let values = [medusa, rol];   
-                for (let month = 1; month <= 12; month++) {
-                    const data = records.find(record => {
+
+                let values = [medusa, rol];  
+                let monthaux=1;
+                for (let month = 1; month <= 24; month++) { 
+                    let monthIndex = Math.floor((month + 1) / 2);
+                    let isF2 = monthaux % 2 === 0; //1 es F1 0 es F2
+                    const firstHalf = months.filter(month => month.endsWith('F1'));
+                    const secondHalf = months.filter(month => month.endsWith('F2'));
+                   /* 
+                    const monthDataVacations = recordsVacation.find(record =>{
+                        const sinceVacations = record.getCellValue('MonthSince');
+                        const untilVacations = record.getCellValue('MonthUntil');
+                        if(monthIndex >= sinceVacations && monthIndex <= untilVacations)
+                        {
+                            values.push(sinceVacations);
+                            return true;
+                        }
+
+                        return false;
+                    });
+*/
+                    
+                    const monthData = records.find(record => {
                         const since = record.getCellValue('MonthSince');
                         const until = record.getCellValue('MonthUntil');
-                        const daySince = record.getCellValueAsString('daySinceTeam');
-                        const datUntil = record.getCellValueAsString('dayUntilTeam');
-                        return month >= since && month <= until;
-                    });  
-                    if (data) {  
-                        
-                        
-                        const team = data.getCellValueAsString('Team');
-                        values.push(team);
-                    } else {
-                        values.push('');
+                        const daySince = record.getCellValue('daySinceTeam');
+                        const dayUntil = record.getCellValue('dayUntilTeam');
+                        const team = record.getCellValueAsString('Team');        
+                        if (monthIndex >= since && monthIndex <= until) {
+
+
+                            if(monthIndex === until && dayUntil < 15 && monthaux!=1)
+                            {
+                                if(isF2==true)
+                                {
+                                    return false;
+                                }
+                            }
+                          
+                            if (monthIndex === since && daySince > 15 && monthaux==1) {
+                                
+                                if(isF2==false)
+                                {
+                                    return false;
+                                }else{
+                                    if(isF2==true)
+                                    {
+                                      return true;                                
+                                    }
+                                }
+                            }
+                            else{
+                               if(monthIndex === since && daySince > 15 && monthaux!=1)
+                                {
+                                   return true;
+                                }
+                            }
+                            if(monthIndex==null)
+                            {
+                                return false;
+                            }
+                            return true;   
                     }
-                }    
+                        return false;
+                    });
+
+                   // if(monthDataVacations)
+                 //   {
+               //      values.push('Vacaciones');
+             //       }else{
+
+                    if (monthData) {
+                        const team = monthData.getCellValueAsString('Team');
+                        const until = monthData.getCellValueAsString('MonthUntil');
+                       values.push(team);
+                    } else {
+                        values.push('');            
+                    }
+           //     }
+                    monthaux++;
+                }
                 return values.join(',');
             })
         ].join('\n');
-    
+       
+      
         const csvBlob = new Blob([csvData], { type: 'text/csv' });
         const csvUrl = URL.createObjectURL(csvBlob);
     
