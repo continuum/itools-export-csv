@@ -27,10 +27,6 @@ function MyBlock() {
             'EneroF1','EneroF2', 'FebreroF1','FebreroF2', 'MarzoF1','MarzoF2', 'AbrilF1','AbrilF2', 'MayoF1','MayoF2', 'JunioF1','JunioF2',
             'JulioF1','JulioF2', 'AgostoF1','AgostoF2', 'SeptiembreF1','SeptiembreF2', 'OctubreF1','OctubreF2', 'NoviembreF1','NoviembreF2', 'DiciembreF1','DiciembreF2'
         ];
-        let monthsOnly = [
-            'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
-        ];
-        
     
         // Agrupar los registros por el valor de "Medusa"
         const groupRecords = {};
@@ -53,30 +49,15 @@ function MyBlock() {
                 for (let month = 1; month <= 24; month++) { 
                     let monthIndex = Math.floor((month + 1) / 2);
                     let isF2 = monthaux % 2 === 0; //1 es F1 0 es F2
-                    const firstHalf = months.filter(month => month.endsWith('F1'));
-                    const secondHalf = months.filter(month => month.endsWith('F2'));
-                   /* 
-                    const monthDataVacations = recordsVacation.find(record =>{
-                        const sinceVacations = record.getCellValue('MonthSince');
-                        const untilVacations = record.getCellValue('MonthUntil');
-                        if(monthIndex >= sinceVacations && monthIndex <= untilVacations)
-                        {
-                            values.push(sinceVacations);
-                            return true;
-                        }
-
-                        return false;
-                    });
-*/
                     
                     const monthData = records.find(record => {
                         const since = record.getCellValue('MonthSince');
                         const until = record.getCellValue('MonthUntil');
                         const daySince = record.getCellValue('daySinceTeam');
                         const dayUntil = record.getCellValue('dayUntilTeam');
-                        const team = record.getCellValueAsString('Team');        
-                        if (monthIndex >= since && monthIndex <= until) {
+                        const team = record.getCellValueAsString('Team');
 
+                        if (monthIndex >= since && monthIndex <= until) {
 
                             if(monthIndex === until && dayUntil < 15 && monthaux!=1)
                             {
@@ -85,9 +66,7 @@ function MyBlock() {
                                     return false;
                                 }
                             }
-                          
                             if (monthIndex === since && daySince > 15 && monthaux==1) {
-                                
                                 if(isF2==false)
                                 {
                                     return false;
@@ -113,19 +92,13 @@ function MyBlock() {
                         return false;
                     });
 
-                   // if(monthDataVacations)
-                 //   {
-               //      values.push('Vacaciones');
-             //       }else{
-
                     if (monthData) {
                         const team = monthData.getCellValueAsString('Team');
-                        const until = monthData.getCellValueAsString('MonthUntil');
                        values.push(team);
                     } else {
                         values.push('');            
                     }
-           //     }
+
                     monthaux++;
                 }
                 return values.join(',');
