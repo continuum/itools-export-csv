@@ -29,26 +29,26 @@ function MyBlock() {
         ];
 
 
-        
-                // Agrupar los registros por el valor de "Medusa"
-                const groupRecords = {};
-                records.forEach(record => {
-                    const medusa = record.getCellValueAsString('Medusa');
-                    if (!groupRecords[medusa]) {
-                        groupRecords[medusa] = [];
-                    }
-                    groupRecords[medusa].push(record);
-                });
-                
-                const groupRecordsVacations = {};
-                recordsVacation.forEach(record => {
-                    const medusa = record.getCellValueAsString('Medusa');
-                    if (!groupRecordsVacations[medusa]) {
-                        groupRecordsVacations[medusa] = [];
-                    }
-                    groupRecordsVacations[medusa].push(record);
-                });
- 
+
+        // Agrupar los registros por el valor de "Medusa"
+        const groupRecords = {};
+        records.forEach(record => {
+            const medusa = record.getCellValueAsString('Medusa');
+            if (!groupRecords[medusa]) {
+                groupRecords[medusa] = [];
+            }
+            groupRecords[medusa].push(record);
+        });
+
+        const groupRecordsVacations = {};
+        recordsVacation.forEach(record => {
+            const medusa = record.getCellValueAsString('Medusa');
+            if (!groupRecordsVacations[medusa]) {
+                groupRecordsVacations[medusa] = [];
+            }
+            groupRecordsVacations[medusa].push(record);
+        });
+
 
         const csvData = [
             'Medusa,Rol,' + months.join(','),
@@ -56,17 +56,18 @@ function MyBlock() {
                 const rol = records[0].getCellValueAsString('Charge for Pipeline (from People) (from Medusa)');
                 let values = [medusa, rol];
                 let monthaux = 1;
+                let passMonth = false;
                 for (let month = 1; month <= 24; month++) {
                     let monthIndex = Math.floor((month + 1) / 2);
-                    let isF2 = monthaux % 2 === 0; //1 es F1 0 es F2    
-                    let medusaCompare;    
+                    let isF2 = monthaux % 2 === 0; //1 es F1 0 es F2 
+                    let medusaCompare;
                     const monthData = records.find(record => {
                         const since = record.getCellValue('MonthSince');
                         const until = record.getCellValue('MonthUntil');
                         const daySince = record.getCellValue('daySinceTeam');
                         const dayUntil = record.getCellValue('dayUntilTeam');
                         const medusa = record.getCellValueAsString('Medusa');
-                        medusaCompare=medusa;
+                        medusaCompare = medusa;
                         if (monthIndex >= since && monthIndex <= until) {
                             if (monthIndex === until && dayUntil < 15 && monthaux != 1) {
                                 if (isF2 == true) {
@@ -95,9 +96,9 @@ function MyBlock() {
                         }
                         return false;
                     });
-                   
-                  
-                
+
+
+
                     const vacationData = recordsVacation.find(vacationRecord => {
                         const medusa = vacationRecord.getCellValueAsString('Medusa');
                         const since = vacationRecord.getCellValue('MonthSince');
@@ -105,51 +106,81 @@ function MyBlock() {
                         const daySince = vacationRecord.getCellValue('daySinceVacations');
                         const dayUntil = vacationRecord.getCellValue('dayUntilVacations');
                         const dayDiference = vacationRecord.getCellValue('dayDiference');
-                        if (monthIndex >= since && monthIndex <= until && medusa ==medusaCompare && dayDiference>=5){
+                        if (monthIndex >= since && monthIndex <= until && medusa == medusaCompare && dayDiference >= 5) {
+            
+
+                            if (monthIndex === until && since != monthIndex && dayUntil < 15 && monthaux !== 1) {
+
+                                if (isF2 == false) {
+
+                                    return true;
+                                }
+
+                            }
                             if (monthIndex === until && dayUntil < 15 && monthaux != 1) {
                                 if (isF2 == true) {
                                     return false;
                                 }
-                            }
-                            if (monthIndex === since && daySince > 15 && monthaux == 1) {
-
-                                if (isF2 == false) {
-                                    return false;
-                                } else {
+                            } else {
+                                if (monthIndex === until && dayUntil > 15 && monthaux != 1) {
                                     if (isF2 == true) {
                                         return true;
                                     }
                                 }
                             }
-                            else {
-                                if (monthIndex === since && daySince > 15 && monthaux != 1) {
-                                    return true;
-                                }
+                            if(monthIndex === since && daySince < 15 && monthaux != 1)
+                            {
+                                return true;
                             }
-                            if (monthIndex == null) {
+
+                                if (monthIndex === since && daySince > 15 && monthaux == 1) {
+
+                                    if (isF2 == false) {
+                                        return false;
+                                    } else {
+                                        if (isF2 == true) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (monthIndex === since && daySince > 15 && monthaux != 1) {
+                                        if (isF2 == false) {
+                                            return false;
+                                        } else {
+                                            if (isF2 == true) {
+                                                return true;
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                                if (monthIndex == null) {
+                                    return false;
+                                }
                                 return false;
                             }
-                            return true;                            
-                        }
-                    });
-                    if(vacationData)
-                    {
-                        const vaca= vacationData.getCellValueAsString('Medusa')
+                        });
+                    if (vacationData) {
+                        const vaca = vacationData.getCellValueAsString('Medusa')
                         values.push('Vacaciones');
-                    }else{
-
-                    if (monthData) {
-
-                        const team = monthData.getCellValueAsString('Team');
-                      
-                        values.push(team);
                     } else {
-                        values.push('');
-                    }
 
+                        if (monthData) {
+
+                            const team = monthData.getCellValueAsString('Team');
+
+                            values.push(team);
+                        } else {
+                            values.push('');
+                        }
+
+
+                    }
                     monthaux++;
+
                 }
-            }
                 return values.join(',');
             })
         ].join('\n');
@@ -171,7 +202,7 @@ function MyBlock() {
 
         <div>
             <button style={botonStyles} onClick={exportToCSV}>Export to CSV</button>
-            
+
         </div>
     );
 }
