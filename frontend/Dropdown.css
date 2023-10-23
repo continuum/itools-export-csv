@@ -1,0 +1,33 @@
+.label {
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .select {
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .select::after {
+    content: '\25BC'; /* Código del carácter de la flecha hacia abajo */
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #333;
+    pointer-events: none; /* Evita que el icono afecte al clic en el select */
+  }
+
+  .select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  .select:focus option {
+    background-color: #f4f4f4;
+    color: #333;
+  }

@@ -1,5 +1,6 @@
 import { initializeBlock, useBase, useRecords } from '@airtable/blocks/ui';
-import React from 'react';
+import React, { useState } from 'react';
+import Dropdown from './Dropdown';
 
 function MyBlock() {
     const botonStyles = {
@@ -15,20 +16,35 @@ function MyBlock() {
         cursor: 'pointer',
         borderRadius: '4px',
     };
-    const base = useBase();
-    const table = base.getTableByName('Team Memberships').getView("CurrentCSV");
-    const tableVacations = base.getTableByName('Vacations').getView('CurrentCSV');
 
-    const records = useRecords(table);
-    const recordsVacation = useRecords(tableVacations);
+    const [selectedOption, setSelectedOption] = useState('');
+    const handleOptionChange = (option) => {
+        setSelectedOption(option);
+    }
+
+    let viewName='CurrentCSV';
+    const base = useBase();
+  
+
+    if (selectedOption == "2023") {
+        
+        viewName = 'CurrentCSV2023';
+    } else {
+        if (selectedOption == "2024") {
+            viewName = 'CurrentCSV2024';
+        }
+    }
+    let table = base.getTableByName('Team Memberships').getView(viewName); 
+    let records = useRecords(table);
+    let tableVacations = base.getTableByName('Vacations').getView(viewName);
+    let recordsVacation = useRecords(tableVacations);
 
     const exportToCSV = async () => {
+
         const months = [
             'EneroF1', 'EneroF2', 'FebreroF1', 'FebreroF2', 'MarzoF1', 'MarzoF2', 'AbrilF1', 'AbrilF2', 'MayoF1', 'MayoF2', 'JunioF1', 'JunioF2',
             'JulioF1', 'JulioF2', 'AgostoF1', 'AgostoF2', 'SeptiembreF1', 'SeptiembreF2', 'OctubreF1', 'OctubreF2', 'NoviembreF1', 'NoviembreF2', 'DiciembreF1', 'DiciembreF2'
         ];
-
-
 
         // Agrupar los registros por el valor de "Medusa"
         const groupRecords = {};
@@ -67,14 +83,15 @@ function MyBlock() {
                         const daySince = record.getCellValue('daySinceTeam');
                         const dayUntil = record.getCellValue('dayUntilTeam');
                         const medusa = record.getCellValueAsString('Medusa');
+                        
                         medusaCompare = medusa;
                         if (monthIndex >= since && monthIndex <= until) {
-                            if (monthIndex === until && dayUntil < 15 && monthaux != 1) {
+                            if (monthIndex === until && dayUntil < 20 && monthaux != 1) {
                                 if (isF2 == true) {
                                     return false;
                                 }
                             }
-                            if (monthIndex === since && daySince > 15 && monthaux == 1) {
+                            if (monthIndex === since && daySince > 19 && monthaux == 1) {
 
                                 if (isF2 == false) {
                                     return false;
@@ -85,7 +102,7 @@ function MyBlock() {
                                 }
                             }
                             else {
-                                if (monthIndex === since && daySince > 15 && monthaux != 1) {
+                                if (monthIndex === since && daySince > 19 && monthaux != 1) {
                                     return true;
                                 }
                             }
@@ -106,10 +123,11 @@ function MyBlock() {
                         const daySince = vacationRecord.getCellValue('daySinceVacations');
                         const dayUntil = vacationRecord.getCellValue('dayUntilVacations');
                         const dayDiference = vacationRecord.getCellValue('dayDiference');
+                     
                         if (monthIndex >= since && monthIndex <= until && medusa == medusaCompare && dayDiference >= 5) {
-            
 
-                            if (monthIndex === until && since != monthIndex && dayUntil < 15 && monthaux !== 1) {
+
+                            if (monthIndex === until && since != monthIndex && dayUntil < 16 && monthaux !== 1) {
 
                                 if (isF2 == false) {
 
@@ -117,24 +135,33 @@ function MyBlock() {
                                 }
 
                             }
-                            if (monthIndex === until && dayUntil < 15 && monthaux != 1) {
+                            if (monthIndex === until && dayUntil < 16 && monthaux != 1) {
                                 if (isF2 == true) {
                                     return false;
                                 }
                             } else {
-                                if (monthIndex === until && dayUntil > 15 && monthaux != 1) {
+                                if (monthIndex === until && dayUntil >= 15 && monthaux != 1) {
                                     if (isF2 == true) {
                                         return true;
                                     }
                                 }
                             }
-                            if(monthIndex === since && daySince < 15 && monthaux != 1)
-                            {
+                            if (monthIndex === since && daySince < 16 && monthaux != 1) {
                                 return true;
                             }
 
-                                if (monthIndex === since && daySince > 15 && monthaux == 1) {
+                            if (monthIndex === since && daySince >= 15 && monthaux == 1) {
 
+                                if (isF2 == false) {
+                                    return false;
+                                } else {
+                                    if (isF2 == true) {
+                                        return true;
+                                    }
+                                }
+                            }
+                            else {
+                                if (monthIndex === since && daySince >= 15 && monthaux != 1) {
                                     if (isF2 == false) {
                                         return false;
                                     } else {
@@ -143,28 +170,38 @@ function MyBlock() {
                                         }
                                     }
                                 }
-                                else {
-                                    if (monthIndex === since && daySince > 15 && monthaux != 1) {
-                                        if (isF2 == false) {
-                                            return false;
-                                        } else {
-                                            if (isF2 == true) {
-                                                return true;
-                                            }
-                                        }
-                                    }
 
-                                }
+                            }
 
-                                if (monthIndex == null) {
-                                    return false;
-                                }
+                            if (monthIndex == null) {
                                 return false;
                             }
-                        });
+                            return true;
+                        }
+                    });
                     if (vacationData) {
-                        const vaca = vacationData.getCellValueAsString('Medusa')
-                        values.push('Vacaciones');
+                        const vaca = vacationData.getCellValueAsString('Medusa');
+                        const type = vacationData.getCellValueAsString('Permit Type');
+                       /*
+                        if(type==""){
+                            values.push('Vacaciones');
+                        }
+                        if(type=="🤒 Licencia Médica")
+                        {
+                                values.push('Licencia Médica');
+                        }
+                        if(type=="🍼 Permiso por Natalidad de Hijo/a (padres)")
+                        {
+                                values.push('Permiso por Natalidad');
+                        }
+                        */
+                        values.push(
+                            type === "" ? 'Vacaciones' :
+                            type === "🤒 Licencia Médica" ? 'Licencia Médica' :
+                            type === "🍼  Licencia Pre y Post Natal" ? 'Permiso por Natalidad' :
+                            ''
+                          );
+                       // values.push('Vacaciones');
                     } else {
 
                         if (monthData) {
@@ -175,7 +212,6 @@ function MyBlock() {
                         } else {
                             values.push('');
                         }
-
 
                     }
                     monthaux++;
@@ -188,7 +224,6 @@ function MyBlock() {
 
         const csvBlob = new Blob([csvData], { type: 'text/csv' });
         const csvUrl = URL.createObjectURL(csvBlob);
-
         const link = document.createElement('a');
         link.href = csvUrl;
         link.download = 'exported_data.csv';
@@ -201,7 +236,15 @@ function MyBlock() {
     return (
 
         <div>
-            <button style={botonStyles} onClick={exportToCSV}>Export to CSV</button>
+            <Dropdown onOptionChange={handleOptionChange}  className="dropdown.js"/>
+            <button
+        style={botonStyles}
+        onClick={exportToCSV}
+        disabled={!selectedOption} 
+      >
+        Exportar a CSV
+      </button>
+      {!selectedOption && <p>Se necesita seleccionar un año para exportar.</p>}
 
         </div>
     );
